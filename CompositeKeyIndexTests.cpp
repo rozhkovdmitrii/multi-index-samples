@@ -48,4 +48,24 @@ typedef multi_index_container<
   >
 > RecSessRelations;
 
+TEST(ComptositeKey, CreateIfExists)
+{
+  // 1. Создали коллекцию
+  RecSessRelations recSessRelations;
+
+  // 2. Проинициализировали то, что будем вставлять
+  PlainRecSessData recSessData;
+  recSessData._clientName = "client";
+  recSessData._recSessId = 1;
+  recSessData._httpStorageURL = "sample.url"; // etc ...
+
+  // 3. Вставка возвращает пару iterator, bool. Итератор смотрит или на вновь созданный элементо или на элемент, который явился причиной конфликта
+  auto result = recSessRelations.insert(recSessData);
+  ASSERT_TRUE(result.second);
+
+  // 4. Повотрная вставка не удалась, потому-что такой ключ уже существует
+  result = recSessRelations.insert(recSessData);
+  ASSERT_FALSE(result.second);
+}
+
 
