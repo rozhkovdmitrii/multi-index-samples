@@ -26,7 +26,8 @@ typedef multi_index_container<
       // const_mem_fun - ссылка на метод класса RecSessData, возвращающий ссылку const std::string
       tag<RecSessData::clientName>, const_mem_fun<RecSessData, const std::string &, &RecSessData::getClientName>
     >,
-    ordered_non_unique<
+    ordered_non_unique
+    <
       tag<RecSessData::mrId>,  member<RecSessData, int, &RecSessData::_mrId>
     >
   >
