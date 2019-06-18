@@ -10,17 +10,22 @@
 
 using namespace boost::multi_index;
 
+
+// Определение типа контейнера, пожалуй, самая запутанная часть работы с multi_index
 typedef multi_index_container<
-  RecSessData,
-  indexed_by<
+  RecSessData, // 1. Тип хранимаого объекта
+  indexed_by<  // 2. Блок определения индексов ordered, hashed, ranked, random-access
     ordered_unique
-      <
-        tag<RecSessData::recSessKey>,  member<RecSessData, RecSessKey, &RecSessData::_recSessKey>
-      >,
+    <
+      // tag - может отсутствовать, тогда обращение к индексу будет производиться по его номеру. В роли tag  используется класс-пустышка
+      // member - ссылка на член класса RecSessData типа RecSessKey
+      tag<RecSessData::recSessKey>,  member<RecSessData, RecSessKey, &RecSessData::_recSessKey>
+    >,
     ordered_non_unique
-      <
-        tag<RecSessData::clientName>, const_mem_fun<RecSessData, const std::string &, &RecSessData::getClientName>
-      >,
+    <
+      // const_mem_fun - ссылка на метод класса RecSessData, возвращающий ссылку const std::string
+      tag<RecSessData::clientName>, const_mem_fun<RecSessData, const std::string &, &RecSessData::getClientName>
+    >,
     ordered_non_unique<
       tag<RecSessData::mrId>,  member<RecSessData, int, &RecSessData::_mrId>
     >
@@ -57,7 +62,6 @@ RecSessData ResearchOnMultiIndexTest::_sample_dmitrii_3 = { {"dmitrii", 3}, {"rt
 RecSessData ResearchOnMultiIndexTest::_sample_ivan_1 = { {"ivan", 1}, {"rtp-receive.host", "calluid", {"rtp.host", 20014}, {"rtp.host", 20016}}, 1 };
 RecSessData ResearchOnMultiIndexTest::_sample_ivan_2 = { {"ivan", 2}, {"rtp-receive.host", "calluid", {"rtp.host", 20018}, {"rtp.host", 20020}}, 2 };
 RecSessData ResearchOnMultiIndexTest::_sample_ivan_3 = { {"ivan", 3}, {"rtp-receive.host", "calluid", {"rtp.host", 20022}, {"rtp.host", 20024}}, 3 };
-
 
 void ResearchOnMultiIndexTest::SetUp()
 {
