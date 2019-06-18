@@ -193,14 +193,20 @@ TEST_F(ResearchOnMultiIndexTest, Replace)
   KeyIndex & keyIndex = _recSessRelations.get<RecSessData::recSessKey>();
   // 2. Поиск по ключу
   KeyIndex::iterator it = keyIndex.find(RecSessKey({"ivan", 1}));
-
+  // 3. Ключ найден, итератор не "смотрит" в конец индекса
   ASSERT_NE(it, keyIndex.end());
+  // 4. data инициализируется копированием из итератора и далее изменяется в соответствие нашим потребностям
   RecSessData data = *it;
   data._mrId = 111;
   data._recSessKey = {"maria", 777};
+
+  // 5. Непосредственно replace - копирование всей структуры в позицию определяемую итератором.
   keyIndex.replace(it, data);
 
+  // 6. Размер структуры не изменился
   ASSERT_EQ(6, _recSessRelations.size());
+
+  // 7. Поскольку одна запись по "ivan" была заменена на "maria" - в остатке должно быть 2 записи по "ivan"
   const ClientIndex & clientIndex = _recSessRelations.get<RecSessData::clientName>();
   ClientIterator from, to;
   std::tie(from, to) = clientIndex.equal_range("ivan");
@@ -210,7 +216,9 @@ TEST_F(ResearchOnMultiIndexTest, Replace)
 TEST_F(ResearchOnMultiIndexTest, Modify)
 {
   //  Boost.MultiIndex provides an alternative updating mechanism called modify:
-
+  // 1. Согласно ману определяем modifier, для изменения содержимого записи без полного её копирования для снижения цены изменения
+  //    modifier определяется структурой, принмающей в конструкторе то, чем будет изменятся целевой объект коллекции в операторе (),
+  //    принимающем объект коллекции по ссылке
   struct KeyChanger
   {
     KeyChanger(const RecSessKey newKey) : _newKey(newKey) { }
@@ -220,11 +228,21 @@ TEST_F(ResearchOnMultiIndexTest, Modify)
       recSessData._recSessKey = _newKey;
     }
   };
+
+  // 2. Получаем уже привычный нам индекс ключа
   KeyIndex & keyIndex = _recSessRelations.get<RecSessData::recSessKey>();
+  // 3. Поиск по ключу
   KeyIndex::iterator it = keyIndex.find(RecSessKey({"ivan", 1}));
+  // 4. Ключ найден, итератор не "смотрит" в конец индекса
   ASSERT_NE(it, keyIndex.end());
+
+  // 5. modify - принимает, определенный ранее KeyChanger. После изменения - все индексы пересчитываются
   keyIndex.modify(it, KeyChanger({"maria", 777}));
+
+  // 6. Размер структуры не изменился
   ASSERT_EQ(6, _recSessRelations.size());
+
+  // 7. Поскольку одна запись по "ivan" была заменена на "maria" - в остатке должно быть 2 записи по "ivan"
   const ClientIndex & clientIndex = _recSessRelations.get<RecSessData::clientName>();
   ClientIterator from, to;
   std::tie(from, to) = clientIndex.equal_range("ivan");
